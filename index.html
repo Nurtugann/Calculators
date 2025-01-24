@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Калькулятор маржинальности сделки</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .calculator {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .product-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .product-row > div {
+            margin-right: 10px;
+            flex: 1;
+        }
+        .product-row label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .product-row select, .product-row input {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        .product-row button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+            height: 40px;
+        }
+        .product-row button:hover {
+            background-color: #d32f2f;
+        }
+        #addProduct {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+        #addProduct:hover {
+            background-color: #45a049;
+        }
+        #calculate {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 16px;
+        }
+        #calculate:hover {
+            background-color: #1976D2;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+        }
+        h2 {
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .product-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .product-row > div {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            .product-row button {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Калькулятор маржинальности сделки</h2>
+    
+    <div id="productsContainer">
+        <!-- Строки с товарами будут добавляться здесь -->
+    </div>
+    
+    <button id="addProduct">Добавить товар</button>
+    <button id="calculate">Рассчитать маржинальность</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    // Список товаров с их себестоимостью
+    const products = [
+        { id: 1, name: "Товар А", cost: 50 },
+        { id: 2, name: "Товар Б", cost: 30 },
+        { id: 3, name: "Товар В", cost: 20 },
+        { id: 4, name: "Товар Г", cost: 40 },
+        { id: 5, name: "Товар Д", cost: 60 }
+        // Добавьте другие товары по необходимости
+    ];
+
+    const productsContainer = document.getElementById('productsContainer');
+    const addProductButton = document.getElementById('addProduct');
+    const calculateButton = document.getElementById('calculate');
+    const resultDiv = document.getElementById('result');
+
+    // Функция для создания строки с товаром
+    function createProductRow() {
+        const row = document.createElement('div');
+        row.className = 'product-row';
+
+        // Выбор товара
+        const productDiv = document.createElement('div');
+        const productLabel = document.createElement('label');
+        productLabel.textContent = 'Выберите товар:';
+        const productSelect = document.createElement('select');
+        productSelect.innerHTML = '<option value="">-- Выберите товар --</option>';
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.id;
+            option.textContent = product.name;
+            productSelect.appendChild(option);
+        });
+        productDiv.appendChild(productLabel);
+        productDiv.appendChild(productSelect);
+        row.appendChild(productDiv);
+
+        // Ввод цены продажи
+        const priceDiv = document.createElement('div');
+        const priceLabel = document.createElement('label');
+        priceLabel.textContent = 'Цена продажи (руб):';
+        const priceInput = document.createElement('input');
+        priceInput.type = 'number';
+        priceInput.min = '0';
+        priceInput.placeholder = 'Введите цену продажи';
+        priceDiv.appendChild(priceLabel);
+        priceDiv.appendChild(priceInput);
+        row.appendChild(priceDiv);
+
+        // Ввод объёма
+        const volumeDiv = document.createElement('div');
+        const volumeLabel = document.createElement('label');
+        volumeLabel.textContent = 'Объем (шт):';
+        const volumeInput = document.createElement('input');
+        volumeInput.type = 'number';
+        volumeInput.min = '0';
+        volumeInput.placeholder = 'Введите объем';
+        volumeDiv.appendChild(volumeLabel);
+        volumeDiv.appendChild(volumeInput);
+        row.appendChild(volumeDiv);
+
+        // Кнопка удаления строки
+        const removeDiv = document.createElement('div');
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'Удалить';
+        removeButton.type = 'button';
+        removeButton.addEventListener('click', () => {
+            productsContainer.removeChild(row);
+        });
+        removeDiv.appendChild(removeButton);
+        row.appendChild(removeDiv);
+
+        productsContainer.appendChild(row);
+    }
+
+    // Добавление первой строки при загрузке
+    createProductRow();
+
+    // Обработчик для добавления новой строки
+    addProductButton.addEventListener('click', () => {
+        createProductRow();
+    });
+
+    // Обработчик для расчета маржинальности
+    calculateButton.addEventListener('click', () => {
+        const rows = document.querySelectorAll('.product-row');
+        let totalRevenue = 0;
+        let totalCost = 0;
+        let messages = [];
+
+        rows.forEach((row, index) => {
+            const productSelect = row.querySelector('select');
+            const priceInput = row.querySelectorAll('input[type="number"]')[0];
+            const volumeInput = row.querySelectorAll('input[type="number"]')[1];
+
+            const productId = parseInt(productSelect.value);
+            const price = parseFloat(priceInput.value);
+            const volume = parseInt(volumeInput.value);
+
+            let rowValid = true; // Локальный флаг валидности для строки
+
+            // Проверка выбора товара
+            if (isNaN(productId)) {
+                messages.push(`Строка ${index + 1}: Пожалуйста, выберите товар.`);
+                rowValid = false;
+            }
+
+            // Проверка цены
+            if (isNaN(price) || price <= 0) {
+                messages.push(`Строка ${index + 1}: Пожалуйста, введите корректную цену.`);
+                rowValid = false;
+            }
+
+            // Проверка объёма
+            if (isNaN(volume) || volume <= 0) {
+                messages.push(`Строка ${index + 1}: Пожалуйста, введите корректный объем.`);
+                rowValid = false;
+            }
+
+            if (rowValid) {
+                const selectedProduct = products.find(p => p.id === productId);
+                if (selectedProduct) {
+                    totalRevenue += price * volume;
+                    totalCost += selectedProduct.cost * volume;
+                } else {
+                    messages.push(`Строка ${index + 1}: Товар не найден.`);
+                }
+            }
+        });
+
+        if (messages.length > 0) {
+            resultDiv.innerHTML = messages.join('<br>');
+            resultDiv.style.backgroundColor = '#ffe6e6';
+            resultDiv.style.borderLeft = '6px solid #ff0000';
+            return;
+        }
+
+        // Проверка, чтобы общая выручка не была нулевой
+        if (totalRevenue === 0) {
+            resultDiv.innerHTML = "Общая выручка равна нулю. Проверьте введённые данные.";
+            resultDiv.style.backgroundColor = '#ffe6e6';
+            resultDiv.style.borderLeft = '6px solid #ff0000';
+            return;
+        }
+
+        const profit = totalRevenue - totalCost;
+        const marginPercentage = (profit / totalRevenue) * 100;
+
+        resultDiv.innerHTML = `
+            <strong>Результаты:</strong><br>
+            Общая выручка: ${totalRevenue.toFixed(2)} руб.<br>
+            Общая себестоимость: ${totalCost.toFixed(2)} руб.<br>
+            Прибыль: ${profit.toFixed(2)} руб.<br>
+            Маржинальность: ${marginPercentage.toFixed(2)}%
+        `;
+        resultDiv.style.backgroundColor = '#e7f3fe';
+        resultDiv.style.borderLeft = '6px solid #2196F3';
+    });
+</script>
+
+</body>
+</html>
