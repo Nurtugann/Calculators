@@ -112,13 +112,13 @@
 </div>
 
 <script>
-    // Список товаров с их себестоимостью
+    // Список товаров с их себестоимостью и рекомендуемой ценой
     const products = [
-        { id: 1, name: "Товар А", cost: 50 },
-        { id: 2, name: "Товар Б", cost: 30 },
-        { id: 3, name: "Товар В", cost: 20 },
-        { id: 4, name: "Товар Г", cost: 40 },
-        { id: 5, name: "Товар Д", cost: 60 }
+        { id: 1, name: "Торнадо 540", cost: 2450, recommendedPrice: 3000 },
+        { id: 2, name: "Колосаль Про", cost: 9454, recommendedPrice: 11000 },
+        { id: 3, name: "Ластик Топ", cost: 7220, recommendedPrice: 8000 },
+        { id: 4, name: "Бомба", cost: 41549, recommendedPrice: 50000 },
+        { id: 5, name: "Грейн Эфир", cost: 1980, recommendedPrice: 2500 }
         // Добавьте другие товары по необходимости
     ];
 
@@ -182,6 +182,19 @@
         });
         removeDiv.appendChild(removeButton);
         row.appendChild(removeDiv);
+
+        // Обработчик события для автозаполнения цены
+        productSelect.addEventListener('change', () => {
+            const selectedProduct = products.find(p => p.id === parseInt(productSelect.value));
+            if (selectedProduct) {
+                priceInput.value = selectedProduct.recommendedPrice;
+                // Если хотите сделать поле цены только для чтения:
+                // priceInput.readOnly = true;
+            } else {
+                priceInput.value = '';
+                // priceInput.readOnly = false;
+            }
+        });
 
         productsContainer.appendChild(row);
     }
